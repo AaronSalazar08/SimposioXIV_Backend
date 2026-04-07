@@ -15,29 +15,42 @@ class AuthController extends Controller
      * Inicia sesión con credenciales UCR.
      *
      * Reglas de negocio:
+     * - Se debe enviar "identifier" (email @ucr.ac.cr O carnet de 6 caracteres) + "password"
+     * - Si el identifier contiene "@" se trata como email, de lo contrario como carnet
      * - El email debe ser @ucr.ac.cr
      * - El carnet debe tener exactamente 6 caracteres alfanuméricos
-     * - Las credenciales email + password deben coincidir
      */
     public function login(Request $request): JsonResponse
     {
         $request->validate([
-            'email' => ['required', 'email', 'regex:/@ucr\.ac\.cr$/'],
-            'carnet' => ['required', 'string', 'size:6', 'alpha_num'],
+            'identifier' => ['required', 'string'],
             'password' => ['required', 'string'],
-        ], [
-            'email.regex' => 'Solo se permiten correos institucionales (@ucr.ac.cr).',
-            'carnet.size' => 'El carnet debe tener exactamente 6 caracteres.',
-            'carnet.alpha_num' => 'El carnet solo puede contener letras y números.',
         ]);
 
-        $user = User::where('email', $request->email)
-            ->where('carnet', $request->carnet)
-            ->first();
+        $identifier = $request->identifier;
+        $isEmail = str_contains($identifier, '@');
+
+        if ($isEmail) {
+            if (! preg_match('/@ucr\.ac\.cr$/', $identifier)) {
+                throw ValidationException::withMessages([
+                    'identifier' => ['Solo se permiten correos institucionales (@ucr.ac.cr).'],
+                ]);
+            }
+
+            $user = User::where('email', $identifier)->first();
+        } else {
+            if (! preg_match('/^[a-zA-Z0-9]{6}$/', $identifier)) {
+                throw ValidationException::withMessages([
+                    'identifier' => ['El carnet debe tener exactamente 6 caracteres alfanuméricos.'],
+                ]);
+            }
+
+            $user = User::where('carnet', $identifier)->first();
+        }
 
         if (! $user || ! Hash::check($request->password, $user->password)) {
             throw ValidationException::withMessages([
-                'email' => ['Las credenciales proporcionadas son incorrectas.'],
+                'identifier' => ['Las credenciales proporcionadas son incorrectas.'],
             ]);
         }
 

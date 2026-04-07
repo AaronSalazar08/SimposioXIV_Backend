@@ -11,16 +11,15 @@ class AuthTest extends TestCase
     use RefreshDatabase;
 
     // =========================================================
-    // LOGIN
+    // LOGIN CON EMAIL
     // =========================================================
 
-    public function test_login_exitoso_devuelve_token_y_usuario(): void
+    public function test_login_exitoso_con_email_devuelve_token_y_usuario(): void
     {
         $user = User::factory()->create(['password' => bcrypt('secret123')]);
 
         $response = $this->postJson('/api/login', [
-            'email' => $user->email,
-            'carnet' => $user->carnet,
+            'identifier' => $user->email,
             'password' => 'secret123',
         ]);
 
@@ -28,64 +27,145 @@ class AuthTest extends TestCase
             ->assertJsonStructure(['token', 'user']);
     }
 
-    public function test_login_falla_con_password_incorrecto(): void
+    public function test_login_falla_con_password_incorrecto_usando_email(): void
     {
         $user = User::factory()->create(['password' => bcrypt('correcto')]);
 
         $response = $this->postJson('/api/login', [
-            'email' => $user->email,
-            'carnet' => $user->carnet,
+            'identifier' => $user->email,
             'password' => 'incorrecto',
         ]);
 
         $response->assertUnprocessable()
-            ->assertJsonValidationErrors(['email']);
-    }
-
-    public function test_login_falla_con_carnet_incorrecto(): void
-    {
-        $user = User::factory()->create(['password' => bcrypt('secret123')]);
-
-        $response = $this->postJson('/api/login', [
-            'email' => $user->email,
-            'carnet' => 'X99999',
-            'password' => 'secret123',
-        ]);
-
-        $response->assertUnprocessable()
-            ->assertJsonValidationErrors(['email']);
+            ->assertJsonValidationErrors(['identifier']);
     }
 
     public function test_login_rechaza_email_no_ucr(): void
     {
         $response = $this->postJson('/api/login', [
-            'email' => 'usuario@gmail.com',
-            'carnet' => 'C12345',
+            'identifier' => 'usuario@gmail.com',
             'password' => 'secret123',
         ]);
 
         $response->assertUnprocessable()
-            ->assertJsonValidationErrors(['email']);
+            ->assertJsonValidationErrors(['identifier']);
     }
 
-    public function test_login_rechaza_carnet_con_longitud_incorrecta(): void
+    public function test_login_rechaza_email_de_otro_dominio_ucr(): void
     {
         $response = $this->postJson('/api/login', [
-            'email' => 'usuario@ucr.ac.cr',
-            'carnet' => 'C123',
+            'identifier' => 'usuario@ecci.ucr.ac.cr',
             'password' => 'secret123',
         ]);
 
         $response->assertUnprocessable()
-            ->assertJsonValidationErrors(['carnet']);
+            ->assertJsonValidationErrors(['identifier']);
     }
+
+    // =========================================================
+    // LOGIN CON CARNET
+    // =========================================================
+
+    public function test_login_exitoso_con_carnet_devuelve_token_y_usuario(): void
+    {
+        $user = User::factory()->create(['password' => bcrypt('secret123')]);
+
+        $response = $this->postJson('/api/login', [
+            'identifier' => $user->carnet,
+            'password' => 'secret123',
+        ]);
+
+        $response->assertOk()
+            ->assertJsonStructure(['token', 'user']);
+    }
+
+    public function test_login_falla_con_password_incorrecto_usando_carnet(): void
+    {
+        $user = User::factory()->create(['password' => bcrypt('correcto')]);
+
+        $response = $this->postJson('/api/login', [
+            'identifier' => $user->carnet,
+            'password' => 'incorrecto',
+        ]);
+
+        $response->assertUnprocessable()
+            ->assertJsonValidationErrors(['identifier']);
+    }
+
+    public function test_login_rechaza_carnet_con_menos_de_6_caracteres(): void
+    {
+        $response = $this->postJson('/api/login', [
+            'identifier' => 'C123',
+            'password' => 'secret123',
+        ]);
+
+        $response->assertUnprocessable()
+            ->assertJsonValidationErrors(['identifier']);
+    }
+
+    public function test_login_rechaza_carnet_con_mas_de_6_caracteres(): void
+    {
+        $response = $this->postJson('/api/login', [
+            'identifier' => 'C123456',
+            'password' => 'secret123',
+        ]);
+
+        $response->assertUnprocessable()
+            ->assertJsonValidationErrors(['identifier']);
+    }
+
+    public function test_login_rechaza_carnet_con_caracteres_especiales(): void
+    {
+        $response = $this->postJson('/api/login', [
+            'identifier' => 'C1234!',
+            'password' => 'secret123',
+        ]);
+
+        $response->assertUnprocessable()
+            ->assertJsonValidationErrors(['identifier']);
+    }
+
+    public function test_login_falla_cuando_carnet_no_existe(): void
+    {
+        $response = $this->postJson('/api/login', [
+            'identifier' => 'X99999',
+            'password' => 'secret123',
+        ]);
+
+        $response->assertUnprocessable()
+            ->assertJsonValidationErrors(['identifier']);
+    }
+
+    // =========================================================
+    // LOGIN — CAMPOS REQUERIDOS
+    // =========================================================
 
     public function test_login_rechaza_campos_requeridos_faltantes(): void
     {
         $response = $this->postJson('/api/login', []);
 
         $response->assertUnprocessable()
-            ->assertJsonValidationErrors(['email', 'carnet', 'password']);
+            ->assertJsonValidationErrors(['identifier', 'password']);
+    }
+
+    public function test_login_rechaza_sin_identifier(): void
+    {
+        $response = $this->postJson('/api/login', [
+            'password' => 'secret123',
+        ]);
+
+        $response->assertUnprocessable()
+            ->assertJsonValidationErrors(['identifier']);
+    }
+
+    public function test_login_rechaza_sin_password(): void
+    {
+        $response = $this->postJson('/api/login', [
+            'identifier' => 'C12345',
+        ]);
+
+        $response->assertUnprocessable()
+            ->assertJsonValidationErrors(['password']);
     }
 
     // =========================================================
