@@ -15,10 +15,12 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call([
-            UserSeeder::class,   // primero: no depende de otros
-            AulaSeeder::class,   // primero: no depende de otros
-            AreaSeeder::class,   // primero: no depende de otros
-            EventoSeeder::class, // depende de: aulas, areas
+            UserSeeder::class,     // sin dependencias
+            AulaSeeder::class,     // sin dependencias
+            AreaSeeder::class,     // sin dependencias
+            PonentesSeeder::class, // sin dependencias
+            HorarioSeeder::class,  // depende de: aulas
+            EventoSeeder::class,   // depende de: horarios, ponentes, areas
         ]);
     }
 }

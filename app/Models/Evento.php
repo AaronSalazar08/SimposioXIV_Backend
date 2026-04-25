@@ -7,10 +7,11 @@ use Database\Factories\EventoFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['titulo', 'descripcion', 'tipo', 'capacidad', 'numero_inscritos', 'esta_activo'])]
+#[Fillable(['horario_id', 'ponente_id', 'titulo', 'descripcion', 'tipo', 'capacidad', 'numero_inscritos', 'esta_activo'])]
 class Evento extends Model
 {
     /** @use HasFactory<EventoFactory> */
@@ -27,9 +28,14 @@ class Evento extends Model
         ];
     }
 
-    public function horarios(): HasMany
+    public function horario(): BelongsTo
     {
-        return $this->hasMany(Horario::class);
+        return $this->belongsTo(Horario::class);
+    }
+
+    public function ponente(): BelongsTo
+    {
+        return $this->belongsTo(Ponente::class);
     }
 
     public function inscripciones(): HasMany

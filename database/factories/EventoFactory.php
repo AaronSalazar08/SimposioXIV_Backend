@@ -4,6 +4,8 @@ namespace Database\Factories;
 
 use App\Enums\TipoEvento;
 use App\Models\Evento;
+use App\Models\Horario;
+use App\Models\Ponente;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -12,13 +14,13 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 class EventoFactory extends Factory
 {
     /**
-     * Define the model's default state.
-     *
      * @return array<string, mixed>
      */
     public function definition(): array
     {
         return [
+            'horario_id' => Horario::factory(),
+            'ponente_id' => Ponente::factory(),
             'titulo' => fake()->sentence(4),
             'descripcion' => fake()->paragraph(),
             'tipo' => fake()->randomElement(TipoEvento::cases()),

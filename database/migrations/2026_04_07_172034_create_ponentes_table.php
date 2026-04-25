@@ -11,13 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('horarios', function (Blueprint $table) {
+        Schema::create('ponentes', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('evento_id')->constrained('eventos')->cascadeOnDelete();
-            $table->foreignId('aula_id')->constrained('aulas')->cascadeOnDelete();
-            $table->integer('numero_dia');
-            $table->dateTime('hora_inicio');
-            $table->dateTime('hora_fin');
+            $table->string('nombre');
+            $table->string('apellidos');
+            $table->string('educacion');
+            $table->string('grado_academico');
+            $table->text('descripcion')->nullable();
             $table->timestamps();
         });
     }
@@ -27,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('horarios');
+        Schema::dropIfExists('ponentes');
     }
 };
