@@ -8,4 +8,5 @@ enum TipoEvento: string
     case Clausura = 'clausura';
     case Taller = 'taller';
     case Charla = 'charla';
+    case Ponencia = 'ponencia';
 }

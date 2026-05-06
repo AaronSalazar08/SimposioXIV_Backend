@@ -8,7 +8,8 @@
       "Bash(curl -L -o fogata.jpg \"https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=400&q=80\")",
       "Bash(curl -L -o carretera.jpg \"https://images.unsplash.com/photo-1519681393784-d120267933ba?w=400&q=80\")",
       "mcp__Claude_in_Chrome__tabs_context_mcp",
-      "WebFetch(domain:multimediossg.github.io)"
+      "WebFetch(domain:multimediossg.github.io)",
+      "Bash(file src/*)"
     ]
   }
 }
