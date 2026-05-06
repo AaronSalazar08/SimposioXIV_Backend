@@ -23,7 +23,7 @@ class InscripcionFactory extends Factory
         return [
             'user_id' => User::factory(),
             'evento_id' => Evento::factory(),
-            'estado' => EstadoInscripcion::Pendiente,
+            'estado' => EstadoInscripcion::Confirmado,
             'enrolled_at' => now(),
         ];
     }

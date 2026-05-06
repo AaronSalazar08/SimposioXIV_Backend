@@ -15,6 +15,8 @@ class Inscripcion extends Model
     /** @use HasFactory<InscripcionFactory> */
     use HasFactory;
 
+    protected $table = 'inscripciones';
+
     public $timestamps = false;
 
     /**

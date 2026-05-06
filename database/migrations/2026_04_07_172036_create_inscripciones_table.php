@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
             $table->foreignId('evento_id')->constrained('eventos')->cascadeOnDelete();
-            $table->string('estado', 20)->default('pendiente');
+            $table->string('estado', 20)->default('confirmado');
             $table->timestamp('enrolled_at')->useCurrent();
             $table->unique(['user_id', 'evento_id']);
         });
