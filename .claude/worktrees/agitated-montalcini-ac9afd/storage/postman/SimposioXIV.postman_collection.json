@@ -1,0 +1,265 @@
+{
+  "info": {
+    "name": "SimposioXIV API",
+    "description": "Colección de endpoints del backend del XIV Simposio de Informática UCR Sede Guanacaste. Iteración 2: eventos + inscripciones.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000/api",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "evento_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "inscripcion_id",
+      "value": "1",
+      "type": "string"
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login (email UCR)",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"identifier\": \"aaron.salazarmata@ucr.ac.cr\",\n  \"password\": \"password\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/login", "host": ["{{base_url}}"], "path": ["login"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  const json = pm.response.json();",
+                  "  pm.collectionVariables.set('token', json.token);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login (carnet)",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"identifier\": \"C37190\",\n  \"password\": \"password\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/login", "host": ["{{base_url}}"], "path": ["login"] }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  const json = pm.response.json();",
+                  "  pm.collectionVariables.set('token', json.token);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Me (perfil autenticado)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/me", "host": ["{{base_url}}"], "path": ["me"] }
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/logout", "host": ["{{base_url}}"], "path": ["logout"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Eventos",
+      "item": [
+        {
+          "name": "Listar eventos (todos)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/eventos",
+              "host": ["{{base_url}}"],
+              "path": ["eventos"]
+            }
+          }
+        },
+        {
+          "name": "Listar eventos — filtro por dia",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/eventos?dia=2",
+              "host": ["{{base_url}}"],
+              "path": ["eventos"],
+              "query": [{ "key": "dia", "value": "2" }]
+            }
+          }
+        },
+        {
+          "name": "Listar eventos — filtro por tipo",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/eventos?tipo=taller",
+              "host": ["{{base_url}}"],
+              "path": ["eventos"],
+              "query": [{ "key": "tipo", "value": "taller", "description": "apertura | clausura | taller | charla" }]
+            }
+          }
+        },
+        {
+          "name": "Listar eventos — solo con cupos",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/eventos?solo_disponibles=1",
+              "host": ["{{base_url}}"],
+              "path": ["eventos"],
+              "query": [{ "key": "solo_disponibles", "value": "1" }]
+            }
+          }
+        },
+        {
+          "name": "Listar eventos — filtro por area",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/eventos?area_id=1",
+              "host": ["{{base_url}}"],
+              "path": ["eventos"],
+              "query": [{ "key": "area_id", "value": "1" }]
+            }
+          }
+        },
+        {
+          "name": "Detalle de evento",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/eventos/{{evento_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["eventos", "{{evento_id}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Inscripciones",
+      "item": [
+        {
+          "name": "Mis inscripciones",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/inscripciones",
+              "host": ["{{base_url}}"],
+              "path": ["inscripciones"]
+            }
+          }
+        },
+        {
+          "name": "Inscribirme a un evento",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"evento_id\": {{evento_id}}\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/inscripciones",
+              "host": ["{{base_url}}"],
+              "path": ["inscripciones"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  const json = pm.response.json();",
+                  "  pm.collectionVariables.set('inscripcion_id', json.data.id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Cancelar inscripcion",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/inscripciones/{{inscripcion_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["inscripciones", "{{inscripcion_id}}"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
