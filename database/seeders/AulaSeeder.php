@@ -16,7 +16,7 @@ class AulaSeeder extends Seeder
     public function run(): void
     {
         $aulas = [
-            ['numero' => 101, 'edificio' => 'Edificio Principal', 'capacidad' => 40],
+            ['numero' => 101, 'edificio' => 'Edificio Principal', 'capacidad' => 50],
             ['numero' => 102, 'edificio' => 'Edificio Principal', 'capacidad' => 30],
             ['numero' => 201, 'edificio' => 'Edificio Principal', 'capacidad' => 50],
             ['numero' => 202, 'edificio' => 'Edificio Principal', 'capacidad' => 30],
