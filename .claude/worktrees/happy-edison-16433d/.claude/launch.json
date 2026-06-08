@@ -1,0 +1,12 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "taskboard",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["--prefix", "C:/Users/aaron/projects/laboratorio6_multimedios", "run", "dev"],
+      "port": 1234,
+      "autoPort": true
+    }
+  ]
+}
