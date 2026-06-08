@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 
@@ -58,7 +60,7 @@ class AuthController extends Controller
 
         return response()->json([
             'token' => $token,
-            'user' => $user,
+            'user' => new UserResource($user),
         ]);
     }
 
@@ -75,8 +77,8 @@ class AuthController extends Controller
     /**
      * Devuelve el usuario autenticado.
      */
-    public function me(Request $request): JsonResponse
+    public function me(Request $request): JsonResource
     {
-        return response()->json($request->user());
+        return new UserResource($request->user());
     }
 }

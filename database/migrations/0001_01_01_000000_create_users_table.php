@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('nombre', 45);
             $table->string('email', 255)->unique();
-            $table->string('carnet', 6)->unique();
+            $table->string('carnet', 6)->unique()->nullable();
             $table->string('password', 255);
             $table->timestamp('email_verified_at')->nullable();
             $table->rememberToken();
