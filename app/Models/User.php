@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\TipoUsuario;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
@@ -12,7 +13,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
-#[Fillable(['nombre', 'email', 'carnet', 'password'])]
+#[Fillable(['nombre', 'email', 'carnet', 'password', 'tipo_usuario'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -27,7 +28,13 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'tipo_usuario' => TipoUsuario::class,
         ];
+    }
+
+    public function esAdmin(): bool
+    {
+        return $this->tipo_usuario === TipoUsuario::Admin;
     }
 
     public function inscripciones(): HasMany

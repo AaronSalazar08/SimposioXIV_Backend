@@ -1,0 +1,31 @@
+<?php
+
+namespace App\Services;
+
+use App\Models\Ponente;
+use Illuminate\Database\Eloquent\Collection;
+
+class PonenteService
+{
+    public function listar(): Collection
+    {
+        return Ponente::orderBy('apellidos')->orderBy('nombre')->get();
+    }
+
+    public function crear(array $datos): Ponente
+    {
+        return Ponente::create($datos);
+    }
+
+    public function actualizar(Ponente $ponente, array $datos): Ponente
+    {
+        $ponente->update($datos);
+
+        return $ponente->fresh();
+    }
+
+    public function eliminar(Ponente $ponente): void
+    {
+        $ponente->delete();
+    }
+}

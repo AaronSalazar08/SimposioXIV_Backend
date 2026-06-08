@@ -1,8 +1,15 @@
 <?php
 
+use App\Http\Controllers\Api\Admin\AreaAdminController;
+use App\Http\Controllers\Api\Admin\AulaAdminController;
+use App\Http\Controllers\Api\Admin\EventoAdminController;
+use App\Http\Controllers\Api\Admin\HorarioAdminController;
+use App\Http\Controllers\Api\Admin\PonenteAdminController;
+use App\Http\Controllers\Api\Admin\UserAdminController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\EventoController;
 use App\Http\Controllers\Api\InscripcionController;
+use App\Http\Middleware\EsAdmin;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -30,4 +37,30 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/inscripciones', [InscripcionController::class, 'index']);
     Route::post('/inscripciones', [InscripcionController::class, 'store']);
     Route::delete('/inscripciones/{inscripcion}', [InscripcionController::class, 'destroy']);
+
+    /*
+    |--------------------------------------------------------------------------
+    | Rutas de administración — requieren tipo_usuario = admin
+    |--------------------------------------------------------------------------
+    */
+    Route::middleware(EsAdmin::class)->prefix('admin')->group(function () {
+        // Usuarios
+        Route::get('/passwords/generar', [UserAdminController::class, 'generarPassword']);
+        Route::apiResource('usuarios', UserAdminController::class);
+
+        // Eventos
+        Route::apiResource('eventos', EventoAdminController::class);
+
+        // Horarios
+        Route::apiResource('horarios', HorarioAdminController::class);
+
+        // Aulas
+        Route::apiResource('aulas', AulaAdminController::class);
+
+        // Ponentes
+        Route::apiResource('ponentes', PonenteAdminController::class);
+
+        // Áreas
+        Route::apiResource('areas', AreaAdminController::class);
+    });
 });
