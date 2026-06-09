@@ -46,6 +46,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::middleware(EsAdmin::class)->prefix('admin')->group(function () {
         // Usuarios
         Route::get('/passwords/generar', [UserAdminController::class, 'generarPassword']);
+        Route::post('/usuarios/{usuario}/enviar-correo', [UserAdminController::class, 'enviarCorreo']);
+        Route::post('/correos/todos', [UserAdminController::class, 'enviarCorreoTodos']);
         Route::apiResource('usuarios', UserAdminController::class);
 
         // Eventos
