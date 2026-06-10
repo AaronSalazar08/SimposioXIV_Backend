@@ -6,6 +6,7 @@ use App\Enums\TipoUsuario;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\UserResource;
 use App\Models\User;
+use App\Services\CorreoService;
 use App\Services\UserService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -15,7 +16,10 @@ use Illuminate\Validation\Rules\Enum;
 
 class UserAdminController extends Controller
 {
-    public function __construct(private readonly UserService $userService) {}
+    public function __construct(
+        private readonly UserService $userService,
+        private readonly CorreoService $correoService,
+    ) {}
 
     public function index(): AnonymousResourceCollection
     {
@@ -74,5 +78,28 @@ class UserAdminController extends Controller
     public function generarPassword(): JsonResponse
     {
         return response()->json(['password' => $this->userService->generarPassword()]);
+    }
+
+    public function enviarCorreo(User $usuario): JsonResponse
+    {
+        try {
+            $this->correoService->enviarBienvenida($usuario);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'No se pudo enviar el correo: '.$e->getMessage()], 500);
+        }
+
+        return response()->json(['message' => "Correo enviado a {$usuario->email}."]);
+    }
+
+    public function enviarCorreoTodos(): JsonResponse
+    {
+        $resultado = $this->correoService->enviarBienvenidaTodos();
+
+        return response()->json([
+            'message' => "Se enviaron {$resultado['enviados']} correos correctamente.".
+                ($resultado['fallidos'] > 0 ? " {$resultado['fallidos']} fallaron." : ''),
+            'enviados' => $resultado['enviados'],
+            'fallidos' => $resultado['fallidos'],
+        ]);
     }
 }
