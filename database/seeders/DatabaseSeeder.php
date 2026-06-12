@@ -21,6 +21,7 @@ class DatabaseSeeder extends Seeder
             PonentesSeeder::class, // sin dependencias
             HorarioSeeder::class,  // depende de: aulas
             EventoSeeder::class,   // depende de: horarios, ponentes, areas
+            AdminSeeder::class,     // depende de: usuarios
         ]);
     }
 }
