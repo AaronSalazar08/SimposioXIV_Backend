@@ -17,6 +17,13 @@ class PonentesSeeder extends Seeder
     {
         $ponentes = [
             [
+                'nombre' => 'Equipo Organizador',
+                'apellidos' => 'SG-CIE',
+                'educacion' => 'Universidad de Costa Rica',
+                'grado_academico' => 'Licenciado',
+                'descripcion' => 'Equipo organizador del XIV Simposio de Informática Empresarial, Sede Guanacaste UCR.',
+            ],
+            [
                 'nombre' => 'Manuel',
                 'apellidos' => 'Rodríguez Solano',
                 'educacion' => 'Universidad de Costa Rica',
