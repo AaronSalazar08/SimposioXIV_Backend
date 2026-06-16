@@ -59,4 +59,16 @@ class EventoFactory extends Factory
             'capacidad' => 200,
         ]);
     }
+
+    public function sinCupos(): static
+    {
+        return $this->state(function (array $attributes) {
+            $capacidad = $attributes['capacidad'] ?? 10;
+
+            return [
+                'capacidad' => $capacidad,
+                'numero_inscritos' => $capacidad,
+            ];
+        });
+    }
 }

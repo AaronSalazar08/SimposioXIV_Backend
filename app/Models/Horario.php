@@ -35,4 +35,10 @@ class Horario extends Model
     {
         return $this->hasMany(Evento::class);
     }
+
+    public function seSolapaCon(Horario $otro): bool
+    {
+        return $this->hora_inicio < $otro->hora_fin
+            && $this->hora_fin > $otro->hora_inicio;
+    }
 }
