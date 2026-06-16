@@ -31,9 +31,7 @@ class EventoResource extends JsonResource
             'usuario_inscrito' => $this->when(
                 $request->user() !== null && $this->relationLoaded('inscripciones'),
                 fn () => $this->inscripciones
-                    ->where('user_id', $request->user()?->id)
-                    ->where('estado', EstadoInscripcion::Confirmado)
-                    ->isNotEmpty()
+                    ->contains(fn ($inscripcion) => $inscripcion->estado === EstadoInscripcion::Confirmado)
             ),
         ];
     }

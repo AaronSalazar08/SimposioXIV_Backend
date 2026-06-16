@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\LoginRequest;
 use App\Http\Resources\UserResource;
 use App\Services\AuthService;
 use Illuminate\Http\JsonResponse;
@@ -13,14 +14,13 @@ class AuthController extends Controller
 {
     public function __construct(private readonly AuthService $authService) {}
 
-    public function login(Request $request): JsonResponse
+    public function login(LoginRequest $request): JsonResponse
     {
-        $request->validate([
-            'identifier' => ['required', 'string'],
-            'password' => ['required', 'string'],
-        ]);
-
-        $resultado = $this->authService->login($request->identifier, $request->password);
+        $resultado = $this->authService->login(
+            $request->identifier(),
+            $request->string('password')->toString(),
+            $request->isEmailIdentifier(),
+        );
 
         return response()->json([
             'token' => $resultado['token'],

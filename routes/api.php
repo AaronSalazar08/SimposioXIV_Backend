@@ -12,57 +12,31 @@ use App\Http\Controllers\Api\InscripcionController;
 use App\Http\Middleware\EsAdmin;
 use Illuminate\Support\Facades\Route;
 
-/*
-|--------------------------------------------------------------------------
-| Rutas públicas — sin autenticación
-|--------------------------------------------------------------------------
-*/
-Route::post('/login', [AuthController::class, 'login']);
+Route::post('/login', [AuthController::class, 'login'])
+    ->middleware('throttle:5,1')
+    ->name('login');
 
-/*
-|--------------------------------------------------------------------------
-| Rutas protegidas — requieren token Sanctum (auth:sanctum)
-|--------------------------------------------------------------------------
-*/
-Route::middleware('auth:sanctum')->group(function () {
-    // Auth
-    Route::post('/logout', [AuthController::class, 'logout']);
-    Route::get('/me', [AuthController::class, 'me']);
+Route::middleware(['auth:sanctum', 'throttle:60,1'])->group(function () {
+    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+    Route::get('/me', [AuthController::class, 'me'])->name('me');
 
-    // Eventos
-    Route::get('/eventos', [EventoController::class, 'index']);
-    Route::get('/eventos/{evento}', [EventoController::class, 'show']);
+    Route::get('/eventos', [EventoController::class, 'index'])->name('eventos.index');
+    Route::get('/eventos/{evento}', [EventoController::class, 'show'])->name('eventos.show');
 
-    // Inscripciones
-    Route::get('/inscripciones', [InscripcionController::class, 'index']);
-    Route::post('/inscripciones', [InscripcionController::class, 'store']);
-    Route::delete('/inscripciones/{inscripcion}', [InscripcionController::class, 'destroy']);
+    Route::get('/inscripciones', [InscripcionController::class, 'index'])->name('inscripciones.index');
+    Route::post('/inscripciones', [InscripcionController::class, 'store'])->name('inscripciones.store');
+    Route::delete('/inscripciones/{inscripcion}', [InscripcionController::class, 'destroy'])->name('inscripciones.destroy');
 
-    /*
-    |--------------------------------------------------------------------------
-    | Rutas de administración — requieren tipo_usuario = admin
-    |--------------------------------------------------------------------------
-    */
     Route::middleware(EsAdmin::class)->prefix('admin')->group(function () {
-        // Usuarios
         Route::get('/passwords/generar', [UserAdminController::class, 'generarPassword']);
         Route::post('/usuarios/{usuario}/enviar-correo', [UserAdminController::class, 'enviarCorreo']);
         Route::post('/correos/todos', [UserAdminController::class, 'enviarCorreoTodos']);
         Route::apiResource('usuarios', UserAdminController::class);
 
-        // Eventos
         Route::apiResource('eventos', EventoAdminController::class);
-
-        // Horarios
         Route::apiResource('horarios', HorarioAdminController::class);
-
-        // Aulas
         Route::apiResource('aulas', AulaAdminController::class);
-
-        // Ponentes
         Route::apiResource('ponentes', PonenteAdminController::class);
-
-        // Áreas
         Route::apiResource('areas', AreaAdminController::class);
     });
 });
