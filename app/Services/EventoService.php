@@ -7,6 +7,9 @@ use Illuminate\Database\Eloquent\Collection;
 
 class EventoService
 {
+    /**
+     * @param  array<string, mixed>  $filtros
+     */
     public function listar(array $filtros, ?int $userId): Collection
     {
         $query = Evento::query()
@@ -16,29 +19,25 @@ class EventoService
                 'areas',
                 'inscripciones' => fn ($q) => $q->where('user_id', $userId),
             ])
-            ->where('esta_activo', true);
+            ->activo();
 
         if (! empty($filtros['dia'])) {
-            $query->whereHas('horario', fn ($q) => $q->where('numero_dia', (int) $filtros['dia']));
+            $query->porDia((int) $filtros['dia']);
         }
 
         if (! empty($filtros['tipo'])) {
-            $query->where('tipo', $filtros['tipo']);
+            $query->porTipo((string) $filtros['tipo']);
         }
 
         if (! empty($filtros['area_id'])) {
-            $query->whereHas('areas', fn ($q) => $q->where('areas.id', (int) $filtros['area_id']));
+            $query->porArea((int) $filtros['area_id']);
         }
 
         if (! empty($filtros['solo_disponibles'])) {
-            $query->whereColumn('numero_inscritos', '<', 'capacidad');
+            $query->conCuposDisponibles();
         }
 
-        return $query
-            ->join('horarios', 'horarios.id', '=', 'eventos.horario_id')
-            ->orderBy('horarios.hora_inicio')
-            ->select('eventos.*')
-            ->get();
+        return $query->ordenadoPorHorario()->get();
     }
 
     public function mostrar(Evento $evento, ?int $userId): Evento

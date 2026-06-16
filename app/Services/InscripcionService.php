@@ -3,23 +3,30 @@
 namespace App\Services;
 
 use App\Enums\EstadoInscripcion;
+use App\Exceptions\Inscripcion\CupoAgotadoException;
+use App\Exceptions\Inscripcion\EventoInactivoException;
+use App\Exceptions\Inscripcion\HorarioSolapadoException;
+use App\Exceptions\Inscripcion\InscripcionDuplicadaException;
 use App\Models\Evento;
 use App\Models\Inscripcion;
-use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 
 class InscripcionService
 {
-    public function listarDeUsuario(int $userId): Collection
+    public function listarDeUsuario(int $userId, ?EstadoInscripcion $estado = null): Collection
     {
-        return Inscripcion::query()
+        $query = Inscripcion::query()
             ->with(['evento.horario.aula', 'evento.ponente', 'evento.areas'])
-            ->where('user_id', $userId)
-            ->orderByDesc('enrolled_at')
-            ->get();
+            ->delUsuario($userId)
+            ->orderByDesc('enrolled_at');
+
+        if ($estado !== null) {
+            $query->conEstado($estado);
+        }
+
+        return $query->get();
     }
 
     public function inscribir(int $userId, int $eventoId): Inscripcion
@@ -30,40 +37,24 @@ class InscripcionService
                 ->findOrFail($eventoId);
 
             if (! $evento->esta_activo) {
-                throw ValidationException::withMessages([
-                    'evento_id' => ['El evento no está activo.'],
-                ]);
+                throw new EventoInactivoException;
             }
 
             if (! $evento->tieneCapacidadDisponible()) {
-                throw ValidationException::withMessages([
-                    'evento_id' => ['El evento ya no tiene cupos disponibles.'],
-                ]);
+                throw new CupoAgotadoException;
             }
 
-            $existente = Inscripcion::where('user_id', $userId)
+            $existente = Inscripcion::query()
+                ->delUsuario($userId)
                 ->where('evento_id', $eventoId)
                 ->first();
 
             if ($existente && $existente->estado === EstadoInscripcion::Confirmado) {
-                throw ValidationException::withMessages([
-                    'evento_id' => ['Ya estás inscrito en este evento.'],
-                ]);
+                throw new InscripcionDuplicadaException;
             }
 
-            $solape = Inscripcion::query()
-                ->where('inscripciones.user_id', $userId)
-                ->where('inscripciones.estado', EstadoInscripcion::Confirmado->value)
-                ->join('eventos', 'eventos.id', '=', 'inscripciones.evento_id')
-                ->join('horarios', 'horarios.id', '=', 'eventos.horario_id')
-                ->where('horarios.hora_inicio', '<', $evento->horario->hora_fin)
-                ->where('horarios.hora_fin', '>', $evento->horario->hora_inicio)
-                ->exists();
-
-            if ($solape) {
-                throw ValidationException::withMessages([
-                    'evento_id' => ['Ya tienes una inscripción activa que se solapa con este horario.'],
-                ]);
+            if (Inscripcion::tieneSolapeDeHorario($userId, $evento->horario)) {
+                throw new HorarioSolapadoException;
             }
 
             if ($existente) {
@@ -91,12 +82,8 @@ class InscripcionService
         return $inscripcion;
     }
 
-    public function cancelar(Inscripcion $inscripcion, int $userId): void
+    public function cancelar(Inscripcion $inscripcion): void
     {
-        if ($inscripcion->user_id !== $userId) {
-            throw new AuthorizationException('No tienes permiso para cancelar esta inscripción.');
-        }
-
         if ($inscripcion->estado === EstadoInscripcion::Cancelado) {
             throw new ConflictHttpException('La inscripción ya estaba cancelada.');
         }
