@@ -114,4 +114,29 @@ class EventoTest extends TestCase
 
         $this->actingAs($user)->getJson('/api/eventos/999999')->assertNotFound();
     }
+
+    public function test_index_filtra_por_tipo(): void
+    {
+        $user = User::factory()->create();
+        Evento::factory()->taller()->create();
+        Evento::factory()->charla()->create();
+
+        $this->actingAs($user)->getJson('/api/eventos?tipo=taller')
+            ->assertOk()
+            ->assertJsonCount(1, 'data');
+    }
+
+    public function test_index_rechaza_tipo_invalido(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)->getJson('/api/eventos?tipo=invalido')->assertUnprocessable();
+    }
+
+    public function test_index_rechaza_dia_invalido(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)->getJson('/api/eventos?dia=99')->assertUnprocessable();
+    }
 }

@@ -237,4 +237,21 @@ class AuthTest extends TestCase
                 'nombre' => $user->nombre,
             ]);
     }
+
+    public function test_login_limita_intentos_repetidos(): void
+    {
+        $user = User::factory()->create(['password' => bcrypt('secret123')]);
+
+        for ($i = 0; $i < 5; $i++) {
+            $this->postJson('/api/login', [
+                'identifier' => $user->email,
+                'password' => 'incorrecto',
+            ])->assertUnprocessable();
+        }
+
+        $this->postJson('/api/login', [
+            'identifier' => $user->email,
+            'password' => 'incorrecto',
+        ])->assertStatus(429);
+    }
 }

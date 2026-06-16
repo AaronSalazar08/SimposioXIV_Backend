@@ -206,4 +206,26 @@ class InscripcionTest extends TestCase
 
         $response->assertStatus(409);
     }
+
+    public function test_index_filtra_por_estado_confirmado(): void
+    {
+        $user = User::factory()->create();
+        Inscripcion::factory()->confirmada()->count(2)->create(['user_id' => $user->id]);
+        Inscripcion::factory()->cancelada()->create(['user_id' => $user->id]);
+
+        $this->actingAs($user)->getJson('/api/inscripciones?estado=confirmado')
+            ->assertOk()
+            ->assertJsonCount(2, 'data');
+    }
+
+    public function test_index_sin_filtro_incluye_canceladas(): void
+    {
+        $user = User::factory()->create();
+        Inscripcion::factory()->confirmada()->create(['user_id' => $user->id]);
+        Inscripcion::factory()->cancelada()->create(['user_id' => $user->id]);
+
+        $this->actingAs($user)->getJson('/api/inscripciones')
+            ->assertOk()
+            ->assertJsonCount(2, 'data');
+    }
 }
