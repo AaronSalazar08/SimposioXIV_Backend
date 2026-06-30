@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\Admin\UserAdminController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\EventoController;
 use App\Http\Controllers\Api\InscripcionController;
+use App\Http\Controllers\Api\PasswordController;
 use App\Http\Middleware\EsAdmin;
 use Illuminate\Support\Facades\Route;
 
@@ -19,6 +20,17 @@ Route::post('/login', [AuthController::class, 'login'])
 Route::middleware(['auth:sanctum', 'throttle:60,1'])->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
     Route::get('/me', [AuthController::class, 'me'])->name('me');
+
+    Route::prefix('password')->group(function () {
+        Route::post('/otp', [PasswordController::class, 'enviarOtp'])
+            ->middleware('throttle:6,5')
+            ->name('password.otp.enviar');
+        Route::post('/otp/verificar', [PasswordController::class, 'verificarOtp'])
+            ->middleware('throttle:10,1')
+            ->name('password.otp.verificar');
+        Route::put('/cambiar', [PasswordController::class, 'cambiarPassword'])
+            ->name('password.cambiar');
+    });
 
     Route::get('/eventos', [EventoController::class, 'index'])->name('eventos.index');
     Route::get('/eventos/{evento}', [EventoController::class, 'show'])->name('eventos.show');
