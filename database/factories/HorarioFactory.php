@@ -26,4 +26,11 @@ class HorarioFactory extends Factory
             'hora_fin' => $horaFin,
         ];
     }
+
+    public function general(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'aula_id' => null,
+        ]);
+    }
 }

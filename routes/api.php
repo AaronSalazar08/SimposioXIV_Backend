@@ -45,6 +45,7 @@ Route::middleware(['auth:sanctum', 'throttle:60,1'])->group(function () {
         Route::post('/correos/todos', [UserAdminController::class, 'enviarCorreoTodos']);
         Route::apiResource('usuarios', UserAdminController::class);
 
+        Route::get('/eventos/{evento}/inscritos', [EventoAdminController::class, 'inscritos']);
         Route::apiResource('eventos', EventoAdminController::class);
         Route::apiResource('horarios', HorarioAdminController::class);
         Route::apiResource('aulas', AulaAdminController::class);

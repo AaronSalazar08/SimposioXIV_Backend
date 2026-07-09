@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\EstadoInscripcion;
 use App\Models\Evento;
 use Illuminate\Database\Eloquent\Collection;
 
@@ -9,7 +10,7 @@ class EventoAdminService
 {
     public function listar(): Collection
     {
-        return Evento::with(['horario.aula', 'ponente', 'areas'])
+        return Evento::with(['horario.aula', 'ponentes', 'areas'])
             ->join('horarios', 'horarios.id', '=', 'eventos.horario_id')
             ->orderBy('horarios.hora_inicio')
             ->select('eventos.*')
@@ -18,7 +19,7 @@ class EventoAdminService
 
     public function mostrar(Evento $evento): Evento
     {
-        $evento->load(['horario.aula', 'ponente', 'areas']);
+        $evento->load(['horario.aula', 'ponentes', 'areas']);
 
         return $evento;
     }
@@ -28,15 +29,20 @@ class EventoAdminService
         $areaIds = $datos['area_ids'] ?? [];
         unset($datos['area_ids']);
 
+        $ponenteIds = $datos['ponente_ids'] ?? [];
+        unset($datos['ponente_ids']);
+
         $evento = Evento::create($datos);
 
         if (! empty($areaIds)) {
             $evento->areas()->sync($areaIds);
         }
 
-        $evento->load(['horario.aula', 'ponente', 'areas']);
+        if (! empty($ponenteIds)) {
+            $evento->ponentes()->sync($ponenteIds);
+        }
 
-        return $evento;
+        return $evento->fresh(['horario.aula', 'ponentes', 'areas']);
     }
 
     public function actualizar(Evento $evento, array $datos): Evento
@@ -44,18 +50,34 @@ class EventoAdminService
         $areaIds = array_key_exists('area_ids', $datos) ? $datos['area_ids'] : null;
         unset($datos['area_ids']);
 
+        $ponenteIds = array_key_exists('ponente_ids', $datos) ? $datos['ponente_ids'] : null;
+        unset($datos['ponente_ids']);
+
         $evento->update($datos);
 
         if ($areaIds !== null) {
             $evento->areas()->sync($areaIds);
         }
 
-        return $evento->fresh(['horario.aula', 'ponente', 'areas']);
+        if ($ponenteIds !== null) {
+            $evento->ponentes()->sync($ponenteIds);
+        }
+
+        return $evento->fresh(['horario.aula', 'ponentes', 'areas']);
     }
 
     public function eliminar(Evento $evento): void
     {
         $evento->areas()->detach();
+        $evento->ponentes()->detach();
         $evento->delete();
+    }
+
+    public function inscritos(Evento $evento): Collection
+    {
+        return $evento->usuarios()
+            ->wherePivot('estado', EstadoInscripcion::Confirmado->value)
+            ->orderBy('nombre')
+            ->get();
     }
 }

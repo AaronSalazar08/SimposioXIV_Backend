@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 #[Fillable(['nombre', 'apellidos', 'educacion', 'grado_academico', 'descripcion'])]
 class Ponente extends Model
@@ -20,8 +20,8 @@ class Ponente extends Model
         return PonentesFactory::new();
     }
 
-    public function eventos(): HasMany
+    public function eventos(): BelongsToMany
     {
-        return $this->hasMany(Evento::class);
+        return $this->belongsToMany(Evento::class, 'evento_ponente');
     }
 }

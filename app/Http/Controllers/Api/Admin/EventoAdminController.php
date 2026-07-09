@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Admin;
 use App\Enums\TipoEvento;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\EventoResource;
+use App\Http\Resources\UserResource;
 use App\Models\Evento;
 use App\Services\EventoAdminService;
 use Illuminate\Http\JsonResponse;
@@ -35,7 +36,8 @@ class EventoAdminController extends Controller
             'capacidad' => ['required', 'integer', 'min:1'],
             'esta_activo' => ['boolean'],
             'horario_id' => ['required', 'integer', 'exists:horarios,id'],
-            'ponente_id' => ['nullable', 'integer', 'exists:ponentes,id'],
+            'ponente_ids' => ['nullable', 'array'],
+            'ponente_ids.*' => ['integer', 'exists:ponentes,id'],
             'area_ids' => ['nullable', 'array'],
             'area_ids.*' => ['integer', 'exists:areas,id'],
         ]);
@@ -57,7 +59,8 @@ class EventoAdminController extends Controller
             'capacidad' => ['sometimes', 'integer', 'min:1'],
             'esta_activo' => ['sometimes', 'boolean'],
             'horario_id' => ['sometimes', 'integer', 'exists:horarios,id'],
-            'ponente_id' => ['sometimes', 'nullable', 'integer', 'exists:ponentes,id'],
+            'ponente_ids' => ['sometimes', 'nullable', 'array'],
+            'ponente_ids.*' => ['integer', 'exists:ponentes,id'],
             'area_ids' => ['sometimes', 'nullable', 'array'],
             'area_ids.*' => ['integer', 'exists:areas,id'],
         ]);
@@ -75,5 +78,10 @@ class EventoAdminController extends Controller
         $this->eventoAdminService->eliminar($evento);
 
         return response()->json(['message' => 'Evento eliminado correctamente.']);
+    }
+
+    public function inscritos(Evento $evento): AnonymousResourceCollection
+    {
+        return UserResource::collection($this->eventoAdminService->inscritos($evento));
     }
 }

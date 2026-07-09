@@ -20,17 +20,17 @@ class EventoTest extends TestCase
         $this->getJson('/api/eventos')->assertUnauthorized();
     }
 
-    public function test_index_devuelve_eventos_activos_con_horario_y_ponente(): void
+    public function test_index_devuelve_eventos_activos_con_horario_y_ponentes(): void
     {
         $user = User::factory()->create();
         $aula = Aula::factory()->create();
         $horario = Horario::factory()->create(['aula_id' => $aula->id, 'numero_dia' => 2]);
         $ponente = Ponente::factory()->create();
-        Evento::factory()->create([
+        $evento = Evento::factory()->create([
             'horario_id' => $horario->id,
-            'ponente_id' => $ponente->id,
             'esta_activo' => true,
         ]);
+        $evento->ponentes()->sync([$ponente->id]);
 
         $response = $this->actingAs($user)->getJson('/api/eventos');
 
@@ -41,7 +41,7 @@ class EventoTest extends TestCase
                         'id', 'titulo', 'descripcion', 'tipo',
                         'capacidad', 'numero_inscritos', 'cupos_disponibles',
                         'horario' => ['id', 'numero_dia', 'hora_inicio', 'hora_fin', 'aula'],
-                        'ponente' => ['id', 'nombre', 'apellidos'],
+                        'ponentes' => [['id', 'nombre', 'apellidos']],
                         'areas',
                     ],
                 ],

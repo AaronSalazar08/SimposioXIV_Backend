@@ -26,7 +26,7 @@ class EventoResource extends JsonResource
             'tiene_capacidad_disponible' => $cuposDisponibles > 0,
             'esta_activo' => $this->esta_activo,
             'horario' => new HorarioResource($this->whenLoaded('horario')),
-            'ponente' => new PonenteResource($this->whenLoaded('ponente')),
+            'ponentes' => PonenteResource::collection($this->whenLoaded('ponentes')),
             'areas' => AreaResource::collection($this->whenLoaded('areas')),
             'usuario_inscrito' => $this->when(
                 $request->user() !== null && $this->relationLoaded('inscripciones'),

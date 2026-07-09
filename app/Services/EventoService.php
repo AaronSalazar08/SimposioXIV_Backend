@@ -15,7 +15,7 @@ class EventoService
         $query = Evento::query()
             ->with([
                 'horario.aula',
-                'ponente',
+                'ponentes',
                 'areas',
                 'inscripciones' => fn ($q) => $q->where('user_id', $userId),
             ])
@@ -44,7 +44,7 @@ class EventoService
     {
         $evento->load([
             'horario.aula',
-            'ponente',
+            'ponentes',
             'areas',
             'inscripciones' => fn ($q) => $q->where('user_id', $userId),
         ]);

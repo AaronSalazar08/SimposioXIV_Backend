@@ -18,7 +18,7 @@ class InscripcionService
     public function listarDeUsuario(int $userId, ?EstadoInscripcion $estado = null): Collection
     {
         $query = Inscripcion::query()
-            ->with(['evento.horario.aula', 'evento.ponente', 'evento.areas'])
+            ->with(['evento.horario.aula', 'evento.ponentes', 'evento.areas'])
             ->delUsuario($userId)
             ->orderByDesc('enrolled_at');
 
@@ -77,7 +77,7 @@ class InscripcionService
             return $inscripcion;
         });
 
-        $inscripcion->load(['evento.horario.aula', 'evento.ponente', 'evento.areas']);
+        $inscripcion->load(['evento.horario.aula', 'evento.ponentes', 'evento.areas']);
 
         return $inscripcion;
     }

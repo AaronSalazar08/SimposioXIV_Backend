@@ -20,7 +20,6 @@ class EventoFactory extends Factory
     {
         return [
             'horario_id' => Horario::factory(),
-            'ponente_id' => Ponente::factory(),
             'titulo' => fake()->sentence(4),
             'descripcion' => fake()->paragraph(),
             'tipo' => fake()->randomElement(TipoEvento::cases()),
@@ -28,6 +27,13 @@ class EventoFactory extends Factory
             'numero_inscritos' => 0,
             'esta_activo' => true,
         ];
+    }
+
+    public function configure(): static
+    {
+        return $this->afterCreating(function (Evento $evento): void {
+            $evento->ponentes()->attach(Ponente::factory()->create());
+        });
     }
 
     public function taller(): static

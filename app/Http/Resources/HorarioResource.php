@@ -17,7 +17,7 @@ class HorarioResource extends JsonResource
             'numero_dia' => $this->numero_dia,
             'hora_inicio' => $this->hora_inicio?->toIso8601String(),
             'hora_fin' => $this->hora_fin?->toIso8601String(),
-            'aula' => new AulaResource($this->whenLoaded('aula')),
+            'aula' => $this->whenLoaded('aula', fn () => $this->aula ? new AulaResource($this->aula) : null),
         ];
     }
 }

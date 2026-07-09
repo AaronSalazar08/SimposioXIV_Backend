@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['horario_id', 'ponente_id', 'titulo', 'descripcion', 'tipo', 'capacidad', 'esta_activo'])]
+#[Fillable(['horario_id', 'titulo', 'descripcion', 'tipo', 'capacidad', 'esta_activo'])]
 class Evento extends Model
 {
     /** @use HasFactory<EventoFactory> */
@@ -34,9 +34,9 @@ class Evento extends Model
         return $this->belongsTo(Horario::class);
     }
 
-    public function ponente(): BelongsTo
+    public function ponentes(): BelongsToMany
     {
-        return $this->belongsTo(Ponente::class);
+        return $this->belongsToMany(Ponente::class, 'evento_ponente');
     }
 
     public function inscripciones(): HasMany

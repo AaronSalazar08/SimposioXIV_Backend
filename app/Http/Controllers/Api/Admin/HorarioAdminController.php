@@ -29,7 +29,7 @@ class HorarioAdminController extends Controller
     public function store(Request $request): JsonResponse
     {
         $datos = $request->validate([
-            'aula_id' => ['required', 'integer', 'exists:aulas,id'],
+            'aula_id' => ['nullable', 'integer', 'exists:aulas,id'],
             'numero_dia' => ['required', 'integer', 'in:1,2,3'],
             'hora_inicio' => ['required', 'date_format:H:i'],
             'hora_fin' => ['required', 'date_format:H:i', 'after:hora_inicio'],
@@ -46,7 +46,7 @@ class HorarioAdminController extends Controller
     public function update(Request $request, Horario $horario): JsonResponse
     {
         $datos = $request->validate([
-            'aula_id' => ['sometimes', 'integer', 'exists:aulas,id'],
+            'aula_id' => ['sometimes', 'nullable', 'integer', 'exists:aulas,id'],
             'numero_dia' => ['sometimes', 'integer', 'in:1,2,3'],
             'hora_inicio' => ['sometimes', 'date_format:H:i'],
             'hora_fin' => ['sometimes', 'date_format:H:i', 'after:hora_inicio'],
