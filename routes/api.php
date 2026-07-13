@@ -36,7 +36,7 @@ Route::middleware(['auth:sanctum', 'throttle:60,1'])->group(function () {
     });
 
     Route::get('/eventos', [EventoController::class, 'index']);
-    Route::get('/eventos/{evento}', [EventoController::class, 'show'])->name('eventos.show');
+    Route::get('/eventos/{evento}', [EventoController::class, 'show']);
 
     Route::get('/inscripciones', [InscripcionController::class, 'index'])->name('inscripciones.index');
     Route::post('/inscripciones', [InscripcionController::class, 'store'])->name('inscripciones.store');
