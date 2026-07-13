@@ -35,7 +35,7 @@ Route::middleware(['auth:sanctum', 'throttle:60,1'])->group(function () {
             ->name('password.cambiar');
     });
 
-    Route::get('/eventos', [EventoController::class, 'index'])->name('eventos.index');
+    Route::get('/eventos', [EventoController::class, 'index']);
     Route::get('/eventos/{evento}', [EventoController::class, 'show'])->name('eventos.show');
 
     Route::get('/inscripciones', [InscripcionController::class, 'index'])->name('inscripciones.index');
