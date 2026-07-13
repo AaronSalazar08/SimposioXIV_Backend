@@ -43,6 +43,6 @@ class UserSeeder extends Seeder
         }
 
         // Usuarios adicionales aleatorios para pruebas de carga
-        User::factory(10)->create();
+        //User::factory(10)->create();
     }
 }
