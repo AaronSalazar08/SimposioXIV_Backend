@@ -8,10 +8,13 @@ use App\Http\Controllers\Api\Admin\PonenteAdminController;
 use App\Http\Controllers\Api\Admin\UserAdminController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\EventoController;
+use App\Http\Controllers\Api\HealthController;
 use App\Http\Controllers\Api\InscripcionController;
 use App\Http\Controllers\Api\PasswordController;
 use App\Http\Middleware\EsAdmin;
 use Illuminate\Support\Facades\Route;
+
+Route::get('/health', HealthController::class)->name('health');
 
 Route::post('/login', [AuthController::class, 'login'])
     ->middleware('throttle:5,1')

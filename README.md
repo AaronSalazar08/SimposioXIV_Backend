@@ -59,6 +59,7 @@ Inscripcion
 
 | Método | Ruta | Auth | Rol |
 |---|---|---|---|
+| GET | `/api/health` | No | — |
 | POST | `/api/login` | No | — |
 | POST | `/api/logout` | Sí | cualquiera |
 | GET | `/api/me` | Sí | cualquiera |
@@ -113,6 +114,19 @@ php artisan migrate --seed
 php artisan serve
 ```
 
+`php artisan serve` imprime, además del mensaje habitual de Laravel, un pequeño resumen con los enlaces útiles para arrancar el sistema completo (health check, API tester y la URL esperada del frontend):
+
+```
+  XIV Simposio — enlaces rápidos
+    API health ..... http://127.0.0.1:8000/api/health
+    API tester ..... http://127.0.0.1:8000/api-tester
+    Frontend (SPA) . http://localhost:5173 (arrancar aparte: npm run dev en SimposioXIV_Frontend)
+
+  INFO  Server running on [http://127.0.0.1:8000].
+```
+
+La URL del frontend que se muestra sale de `FRONTEND_URL` en `.env` (por defecto `http://localhost:5173`, el puerto de Vite) — ajústala si corrés el frontend en otro puerto.
+
 La API queda arriba en `http://localhost:8000`. Con `--seed` se cargan datos de prueba: eventos, horarios, aulas, ponentes, áreas y estos usuarios de prueba (contraseña `password` salvo el admin):
 
 | Identificador | Email | Rol |
@@ -123,6 +137,38 @@ La API queda arriba en `http://localhost:8000`. Con `--seed` se cargan datos de 
 | — | `admin@ucr.ac.cr` | **admin** — password `Admin1234!` |
 
 Más 10 usuarios aleatorios generados por factory.
+
+### Verificar que el backend encendió bien
+
+```bash
+curl http://localhost:8000/api/health
+```
+
+Devuelve JSON con el estado de la app, versión de PHP/Laravel y si la base de datos está conectada:
+
+```json
+{
+  "status": "ok",
+  "app": "Laravel",
+  "env": "local",
+  "php_version": "8.5.5",
+  "laravel_version": "13.6.0",
+  "database": { "connected": true, "driver": "pgsql", "error": null },
+  "timestamp": "2026-07-13T20:42:32+00:00"
+}
+```
+
+### Consola de pruebas de la API (`/api-tester`)
+
+Con el servidor corriendo, abre `http://localhost:8000/api-tester` en el navegador: una vista Blade autocontenida (sin build, sin dependencias externas) que lista **todos los endpoints de la API organizados por sección** (Salud, Autenticación, Contraseña/OTP, Eventos, Inscripciones, Admin · Usuarios/Eventos/Horarios/Aulas/Ponentes/Áreas). Por cada endpoint podés:
+
+- Editar parámetros de ruta, query params y el cuerpo JSON (precargado con un ejemplo válido)
+- Enviar la petición real contra la API y ver el código de estado, tiempo de respuesta y el JSON de respuesta formateado
+- Hacer login una vez y el token Bearer queda guardado automáticamente (`localStorage`) para el resto de los endpoints protegidos, sin tener que copiarlo a mano
+
+Es la forma más rápida de validar que el backend levantó bien y que cada endpoint responde como se espera, sin necesidad de Postman/Insomnia.
+
+**Disponibilidad:** habilitada por defecto solo fuera de `APP_ENV=production` (variable `API_TESTER_ENABLED` en `.env`, ver `.env.example`). En producción devuelve `404` a menos que se fuerce explícitamente con `API_TESTER_ENABLED=true`. No añade ningún bypass de autenticación: cada request que dispara sigue respetando la autenticación real de la API (rutas `auth:sanctum`/`EsAdmin`), así que no expone nada que ya no pudieras hacer con un cliente HTTP cualquiera.
 
 ### Servir junto con el frontend
 
@@ -181,6 +227,7 @@ CI (`.github/workflows/laravel.yml`) corre en cada push/PR a `main`: `pint --tes
 | `SESSION_DOMAIN` | dominio del frontend si necesitas cookies entre subdominios; déjalo en `null` si solo usas Bearer token |
 | `CACHE_STORE`, `QUEUE_CONNECTION`, `SESSION_DRIVER` | `redis` en vez de `database` bajo carga real |
 | `LOG_LEVEL` | `error` o `warning` (no `debug`) |
+| `API_TESTER_ENABLED` | Déjala sin definir (queda `false` automáticamente por `APP_ENV=production`) — no la pongas en `true` en producción |
 
 ### Gestión de secretos
 
@@ -220,6 +267,7 @@ Checklist antes de exponerlo públicamente:
 - [ ] `SANCTUM_STATEFUL_DOMAINS` apuntando al dominio real del frontend
 - [ ] Rate limiting revisado (`throttle:5,1` en login, `throttle:60,1` en rutas autenticadas) — ajustar si el tráfico esperado lo requiere
 - [ ] Worker de colas (`queue:work`) corriendo como servicio persistente para el envío de correos
+- [ ] `/api-tester` devuelve `404` (verificar con `curl -I https://api.tudominio.com/api-tester`) — no forzar `API_TESTER_ENABLED=true` en producción
 
 ---
 
@@ -230,7 +278,7 @@ app/
 ├── Enums/                       TipoEvento, EstadoInscripcion, TipoUsuario
 ├── Http/
 │   ├── Controllers/Api/
-│   │   ├── AuthController.php, PasswordController.php
+│   │   ├── AuthController.php, PasswordController.php, HealthController.php
 │   │   ├── EventoController.php, InscripcionController.php
 │   │   └── Admin/                CRUD de administración (eventos, horarios, aulas, ponentes, áreas, usuarios)
 │   ├── Middleware/EsAdmin.php
@@ -245,6 +293,11 @@ database/
 ├── migrations/
 └── seeders/                      UserSeeder, AdminSeeder, AulaSeeder, AreaSeeder, PonenteSeeder, HorarioSeeder, EventoSeeder
 
-routes/api.php                    Todas las rutas de la API
+resources/views/api-tester/       Consola de pruebas de la API (/api-tester)
+
+routes/
+├── api.php                       Todas las rutas de la API (incluye /health)
+└── web.php                       Vista welcome + /api-tester
+
 tests/                             PHPUnit, feature tests
 ```

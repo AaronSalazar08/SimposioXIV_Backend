@@ -35,4 +35,12 @@ return [
         ],
     ],
 
+    'api_tester' => [
+        'enabled' => (bool) env('API_TESTER_ENABLED', env('APP_ENV', 'production') !== 'production'),
+    ],
+
+    'frontend' => [
+        'url' => env('FRONTEND_URL', 'http://localhost:5173'),
+    ],
+
 ];
