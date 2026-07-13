@@ -102,4 +102,36 @@ class EventoAdminTest extends TestCase
 
         $response->assertForbidden();
     }
+
+    public function test_admin_puede_eliminar_evento_sin_inscripciones_confirmadas(): void
+    {
+        $evento = Evento::factory()->create();
+
+        $response = $this->actingAs($this->admin)->deleteJson("/api/admin/eventos/{$evento->id}");
+
+        $response->assertOk();
+        $this->assertDatabaseMissing('eventos', ['id' => $evento->id]);
+    }
+
+    public function test_no_puede_eliminar_evento_con_inscripciones_confirmadas(): void
+    {
+        $evento = Evento::factory()->create();
+        Inscripcion::factory()->confirmada()->create(['evento_id' => $evento->id]);
+
+        $response = $this->actingAs($this->admin)->deleteJson("/api/admin/eventos/{$evento->id}");
+
+        $response->assertStatus(409);
+        $this->assertDatabaseHas('eventos', ['id' => $evento->id]);
+    }
+
+    public function test_puede_eliminar_evento_con_solo_inscripciones_canceladas(): void
+    {
+        $evento = Evento::factory()->create();
+        Inscripcion::factory()->cancelada()->create(['evento_id' => $evento->id]);
+
+        $response = $this->actingAs($this->admin)->deleteJson("/api/admin/eventos/{$evento->id}");
+
+        $response->assertOk();
+        $this->assertDatabaseMissing('eventos', ['id' => $evento->id]);
+    }
 }

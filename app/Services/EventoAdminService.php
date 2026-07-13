@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Enums\EstadoInscripcion;
 use App\Models\Evento;
 use Illuminate\Database\Eloquent\Collection;
+use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 
 class EventoAdminService
 {
@@ -68,6 +69,16 @@ class EventoAdminService
 
     public function eliminar(Evento $evento): void
     {
+        $totalInscritos = $evento->inscripciones()->conEstado(EstadoInscripcion::Confirmado)->count();
+
+        if ($totalInscritos > 0) {
+            throw new ConflictHttpException(
+                "No se puede eliminar el evento \"{$evento->titulo}\" porque tiene {$totalInscritos} ".
+                ($totalInscritos === 1 ? 'inscripción confirmada.' : 'inscripciones confirmadas.').
+                ' Los participantes deben cancelar su inscripción primero.'
+            );
+        }
+
         $evento->areas()->detach();
         $evento->ponentes()->detach();
         $evento->delete();

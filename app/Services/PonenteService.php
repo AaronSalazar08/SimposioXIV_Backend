@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Ponente;
 use Illuminate\Database\Eloquent\Collection;
+use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 
 class PonenteService
 {
@@ -26,6 +27,18 @@ class PonenteService
 
     public function eliminar(Ponente $ponente): void
     {
+        $totalEventos = $ponente->eventos()->count();
+
+        if ($totalEventos > 0) {
+            $nombreCompleto = trim("{$ponente->nombre} {$ponente->apellidos}");
+
+            throw new ConflictHttpException(
+                "No se puede eliminar a {$nombreCompleto} porque está asignado a {$totalEventos} ".
+                ($totalEventos === 1 ? 'evento.' : 'eventos.').
+                ' Quitalo primero de esos eventos.'
+            );
+        }
+
         $ponente->delete();
     }
 }

@@ -3,6 +3,7 @@
 namespace Tests\Feature\Admin;
 
 use App\Models\Aula;
+use App\Models\Evento;
 use App\Models\Horario;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -54,5 +55,26 @@ class HorarioAdminTest extends TestCase
         $response = $this->actingAs($this->admin)->getJson('/api/admin/horarios');
 
         $response->assertOk()->assertJsonCount(2, 'data');
+    }
+
+    public function test_admin_puede_eliminar_horario_sin_eventos_asociados(): void
+    {
+        $horario = Horario::factory()->create();
+
+        $response = $this->actingAs($this->admin)->deleteJson("/api/admin/horarios/{$horario->id}");
+
+        $response->assertOk();
+        $this->assertDatabaseMissing('horarios', ['id' => $horario->id]);
+    }
+
+    public function test_no_puede_eliminar_horario_con_eventos_asociados(): void
+    {
+        $horario = Horario::factory()->create();
+        Evento::factory()->create(['horario_id' => $horario->id]);
+
+        $response = $this->actingAs($this->admin)->deleteJson("/api/admin/horarios/{$horario->id}");
+
+        $response->assertStatus(409);
+        $this->assertDatabaseHas('horarios', ['id' => $horario->id]);
     }
 }

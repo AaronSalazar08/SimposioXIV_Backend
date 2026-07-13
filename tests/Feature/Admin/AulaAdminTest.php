@@ -3,6 +3,7 @@
 namespace Tests\Feature\Admin;
 
 use App\Models\Aula;
+use App\Models\Horario;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -75,6 +76,17 @@ class AulaAdminTest extends TestCase
 
         $response->assertOk();
         $this->assertDatabaseMissing('aulas', ['id' => $aula->id]);
+    }
+
+    public function test_no_puede_eliminar_aula_con_horarios_asociados(): void
+    {
+        $aula = Aula::factory()->create();
+        Horario::factory()->create(['aula_id' => $aula->id]);
+
+        $response = $this->actingAs($this->admin)->deleteJson("/api/admin/aulas/{$aula->id}");
+
+        $response->assertStatus(409);
+        $this->assertDatabaseHas('aulas', ['id' => $aula->id]);
     }
 
     public function test_participante_no_puede_crear_aula(): void

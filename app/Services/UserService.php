@@ -2,10 +2,12 @@
 
 namespace App\Services;
 
+use App\Enums\EstadoInscripcion;
 use App\Enums\TipoUsuario;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Str;
+use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 
 class UserService
 {
@@ -50,6 +52,16 @@ class UserService
 
     public function eliminar(User $user): void
     {
+        $totalInscritas = $user->inscripciones()->conEstado(EstadoInscripcion::Confirmado)->count();
+
+        if ($totalInscritas > 0) {
+            throw new ConflictHttpException(
+                "No se puede eliminar a {$user->nombre} porque tiene {$totalInscritas} ".
+                ($totalInscritas === 1 ? 'inscripción confirmada.' : 'inscripciones confirmadas.').
+                ' El participante debe cancelar su inscripción primero.'
+            );
+        }
+
         $user->tokens()->delete();
         $user->delete();
     }

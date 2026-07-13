@@ -3,6 +3,7 @@
 namespace Tests\Feature\Admin;
 
 use App\Enums\TipoUsuario;
+use App\Models\Inscripcion;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -136,5 +137,27 @@ class UserAdminTest extends TestCase
         $response = $this->actingAs($this->admin)->deleteJson('/api/admin/usuarios/9999');
 
         $response->assertNotFound();
+    }
+
+    public function test_no_puede_eliminar_usuario_con_inscripcion_confirmada(): void
+    {
+        $user = User::factory()->create();
+        Inscripcion::factory()->confirmada()->create(['user_id' => $user->id]);
+
+        $response = $this->actingAs($this->admin)->deleteJson("/api/admin/usuarios/{$user->id}");
+
+        $response->assertStatus(409);
+        $this->assertDatabaseHas('users', ['id' => $user->id]);
+    }
+
+    public function test_puede_eliminar_usuario_con_solo_inscripcion_cancelada(): void
+    {
+        $user = User::factory()->create();
+        Inscripcion::factory()->cancelada()->create(['user_id' => $user->id]);
+
+        $response = $this->actingAs($this->admin)->deleteJson("/api/admin/usuarios/{$user->id}");
+
+        $response->assertOk();
+        $this->assertDatabaseMissing('users', ['id' => $user->id]);
     }
 }
