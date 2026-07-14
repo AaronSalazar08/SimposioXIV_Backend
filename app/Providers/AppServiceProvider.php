@@ -18,7 +18,7 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-       // DB::prohibitDestructiveCommands($this->app->isProduction());
+        // DB::prohibitDestructiveCommands($this->app->isProduction());
 
         Event::listen(function (CommandStarting $event): void {
             if ($event->command === 'serve') {
