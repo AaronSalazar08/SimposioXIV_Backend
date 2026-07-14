@@ -36,3 +36,9 @@ jobs:
         DB_DATABASE: database/database.sqlite
         APP_LOCALE: es
       run: php artisan test --compact
+    # Deploy
+    - name: Deploy
+      if: github.ref == 'refs/heads/main'
+      uses: jbrooksuk/laravel-forge-action@v1.0.2
+      with:
+        trigger_url: ${{ secrets.TRIGGER_URL }}
