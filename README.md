@@ -1,4 +1,4 @@
-# Simposio XIV — Backend (API)
+# Simposio XIV — Backend (API) *
 
 API REST del **XIV Simposio de Informática Empresarial** (Universidad de Costa Rica): autenticación, catálogo de eventos, inscripciones de participantes y panel de administración (eventos, horarios, aulas, ponentes, áreas y usuarios).
 
