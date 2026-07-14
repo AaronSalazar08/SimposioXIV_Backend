@@ -228,6 +228,13 @@ CI (`.github/workflows/laravel.yml`) corre en cada push/PR a `main`: `pint --tes
 | `CACHE_STORE`, `QUEUE_CONNECTION`, `SESSION_DRIVER` | `redis` en vez de `database` bajo carga real |
 | `LOG_LEVEL` | `error` o `warning` (no `debug`) |
 | `API_TESTER_ENABLED` | Déjala sin definir (queda `false` automáticamente por `APP_ENV=production`) — no la pongas en `true` en producción |
+| `FRONTEND_URL` | URL pública del frontend en producción, ej. `https://sieguanacaste.com` (sin barra final). El botón "Ingresar al Simposio" del correo de bienvenida (`resources/views/emails/bienvenida.blade.php`) enlaza ahí — si queda en el default de desarrollo, ese botón manda a `localhost:5173` para todos los usuarios reales. |
+
+### `env()` fuera de archivos de config: por qué rompe en producción
+
+Toda lectura de variables de entorno en el código de la app (controllers, services, **vistas Blade**, mailables) debe pasar por `config('services.frontend.url')` y **nunca** por `env('FRONTEND_URL', ...)` directamente. Motivo: `php artisan config:cache` (parte del despliegue, ver abajo) hace que Laravel deje de leer el archivo `.env` en cada request — usa el array de config ya resuelto y cacheado. Si algo fuera de un archivo `config/*.php` llama a `env()` directamente, esa llamada **siempre devuelve el valor por defecto** (o `null`) una vez que el config está cacheado, sin importar lo que diga el `.env` real del servidor. Esto ya causó un bug real: el correo de bienvenida enlazaba a `http://localhost:5173` en producción porque la vista llamaba `env('FRONTEND_URL', ...)` en vez de `config('services.frontend.url')`. Si agregás una variable de entorno nueva:
+1. Exponela en `config/services.php` (o el archivo de config que corresponda) con `env('MI_VAR', 'default')`.
+2. Consumila en el resto del código con `config('services.mi_var')`, nunca con `env()` directo.
 
 ### Gestión de secretos
 
@@ -259,12 +266,20 @@ npm install --ignore-scripts
 npm run build
 ```
 
+**Si solo cambiaste una variable de `.env`** (por ejemplo `FRONTEND_URL` o `MAIL_*`) sin tocar código, no alcanza con editar el archivo: el config y las vistas quedaron cacheados del despliegue anterior. Hay que refrescar el cache explícitamente:
+
+```bash
+php artisan config:clear && php artisan config:cache
+php artisan view:clear
+```
+
 Checklist antes de exponerlo públicamente:
 - [ ] `APP_DEBUG=false` y `APP_ENV=production`
 - [ ] Base de datos con backups automáticos configurados
 - [ ] `php artisan admin:seed` o equivalente ejecutado con una contraseña de admin que **no sea** `Admin1234!` (cambiar el seeder o rotar la contraseña tras el primer login)
 - [ ] Certificado HTTPS activo en el dominio de la API
 - [ ] `SANCTUM_STATEFUL_DOMAINS` apuntando al dominio real del frontend
+- [ ] `FRONTEND_URL` apuntando al dominio real del frontend (revisa el correo de bienvenida en un envío de prueba: el botón debe apuntar ahí, no a `localhost:5173`)
 - [ ] Rate limiting revisado (`throttle:5,1` en login, `throttle:60,1` en rutas autenticadas) — ajustar si el tráfico esperado lo requiere
 - [ ] Worker de colas (`queue:work`) corriendo como servicio persistente para el envío de correos
 - [ ] `/api-tester` devuelve `404` (verificar con `curl -I https://api.tudominio.com/api-tester`) — no forzar `API_TESTER_ENABLED=true` en producción

@@ -88,7 +88,7 @@
               <table width="100%" cellpadding="0" cellspacing="0">
                 <tr>
                   <td align="center" style="padding:8px 0 24px 0;">
-                    <a href="{{ env('FRONTEND_URL', 'http://localhost:5173') }}"
+                    <a href="{{ config('services.frontend.url') }}"
                        style="display:inline-block;background-color:#005DA4;color:#ffffff;font-size:14px;font-weight:700;text-decoration:none;padding:14px 36px;border-radius:8px;letter-spacing:0.5px;">
                       Ingresar al Simposio →
                     </a>
