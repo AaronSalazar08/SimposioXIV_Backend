@@ -13,6 +13,7 @@
         "laravel/framework": "^13.0",
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^3.0",
+        "resend/resend-laravel": "*",
         "symfony/http-client": "*",
         "symfony/postmark-mailer": "*"
     },
