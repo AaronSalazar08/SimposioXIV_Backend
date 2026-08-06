@@ -18,7 +18,9 @@ class InscripcionResource extends JsonResource
             'evento_id' => $this->evento_id,
             'estado' => $this->estado->value,
             'enrolled_at' => $this->enrolled_at?->toIso8601String(),
+            'asistio' => $this->asistio,
             'evento' => new EventoResource($this->whenLoaded('evento')),
+            'user' => new UserResource($this->whenLoaded('user')),
         ];
     }
 }

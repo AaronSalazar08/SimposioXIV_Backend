@@ -5,8 +5,9 @@ namespace App\Http\Controllers\Api\Admin;
 use App\Enums\TipoEvento;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\EventoResource;
-use App\Http\Resources\UserResource;
+use App\Http\Resources\InscripcionResource;
 use App\Models\Evento;
+use App\Models\Inscripcion;
 use App\Services\EventoAdminService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -82,6 +83,17 @@ class EventoAdminController extends Controller
 
     public function inscritos(Evento $evento): AnonymousResourceCollection
     {
-        return UserResource::collection($this->eventoAdminService->inscritos($evento));
+        return InscripcionResource::collection($this->eventoAdminService->inscritos($evento));
+    }
+
+    public function actualizarAsistencia(Request $request, Evento $evento, Inscripcion $inscripcion): JsonResponse
+    {
+        abort_if($inscripcion->evento_id !== $evento->id, 404);
+
+        $datos = $request->validate(['asistio' => ['required', 'boolean']]);
+
+        $actualizada = $this->eventoAdminService->marcarAsistencia($inscripcion, $datos['asistio']);
+
+        return response()->json(['data' => new InscripcionResource($actualizada)]);
     }
 }

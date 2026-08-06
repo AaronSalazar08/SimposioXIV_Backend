@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Enums\EstadoInscripcion;
 use App\Models\Evento;
+use App\Models\Inscripcion;
 use Illuminate\Database\Eloquent\Collection;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 
@@ -86,9 +87,18 @@ class EventoAdminService
 
     public function inscritos(Evento $evento): Collection
     {
-        return $evento->usuarios()
-            ->wherePivot('estado', EstadoInscripcion::Confirmado->value)
-            ->orderBy('nombre')
-            ->get();
+        return $evento->inscripciones()
+            ->with('user')
+            ->conEstado(EstadoInscripcion::Confirmado)
+            ->get()
+            ->sortBy(fn (Inscripcion $inscripcion) => $inscripcion->user->nombre)
+            ->values();
+    }
+
+    public function marcarAsistencia(Inscripcion $inscripcion, bool $asistio): Inscripcion
+    {
+        $inscripcion->update(['asistio' => $asistio]);
+
+        return $inscripcion->fresh('user');
     }
 }

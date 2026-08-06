@@ -90,7 +90,8 @@ class EventoAdminTest extends TestCase
         $response->assertOk()
             ->assertJsonCount(1, 'data')
             ->assertJsonFragment(['nombre' => 'María Fernández', 'email' => $inscrito->email, 'carnet' => 'C12345'])
-            ->assertJsonMissing(['nombre' => 'Usuario Cancelado']);
+            ->assertJsonMissing(['nombre' => 'Usuario Cancelado'])
+            ->assertJsonPath('data.0.asistio', false);
     }
 
     public function test_participante_no_puede_ver_inscritos_de_evento(): void
@@ -101,6 +102,57 @@ class EventoAdminTest extends TestCase
         $response = $this->actingAs($participante)->getJson("/api/admin/eventos/{$evento->id}/inscritos");
 
         $response->assertForbidden();
+    }
+
+    public function test_admin_puede_marcar_asistencia_de_un_inscrito(): void
+    {
+        $evento = Evento::factory()->create();
+        $inscripcion = Inscripcion::factory()->confirmada()->create(['evento_id' => $evento->id]);
+
+        $response = $this->actingAs($this->admin)
+            ->putJson("/api/admin/eventos/{$evento->id}/inscritos/{$inscripcion->id}/asistencia", ['asistio' => true]);
+
+        $response->assertOk()
+            ->assertJsonPath('data.asistio', true);
+        $this->assertDatabaseHas('inscripciones', ['id' => $inscripcion->id, 'asistio' => true]);
+    }
+
+    public function test_admin_puede_desmarcar_asistencia_de_un_inscrito(): void
+    {
+        $evento = Evento::factory()->create();
+        $inscripcion = Inscripcion::factory()->confirmada()->create(['evento_id' => $evento->id, 'asistio' => true]);
+
+        $response = $this->actingAs($this->admin)
+            ->putJson("/api/admin/eventos/{$evento->id}/inscritos/{$inscripcion->id}/asistencia", ['asistio' => false]);
+
+        $response->assertOk()
+            ->assertJsonPath('data.asistio', false);
+        $this->assertDatabaseHas('inscripciones', ['id' => $inscripcion->id, 'asistio' => false]);
+    }
+
+    public function test_participante_no_puede_marcar_asistencia(): void
+    {
+        $evento = Evento::factory()->create();
+        $inscripcion = Inscripcion::factory()->confirmada()->create(['evento_id' => $evento->id]);
+        $participante = User::factory()->create();
+
+        $response = $this->actingAs($participante)
+            ->putJson("/api/admin/eventos/{$evento->id}/inscritos/{$inscripcion->id}/asistencia", ['asistio' => true]);
+
+        $response->assertForbidden();
+        $this->assertDatabaseHas('inscripciones', ['id' => $inscripcion->id, 'asistio' => false]);
+    }
+
+    public function test_no_puede_marcar_asistencia_de_inscripcion_de_otro_evento(): void
+    {
+        $evento = Evento::factory()->create();
+        $otroEvento = Evento::factory()->create();
+        $inscripcion = Inscripcion::factory()->confirmada()->create(['evento_id' => $otroEvento->id]);
+
+        $response = $this->actingAs($this->admin)
+            ->putJson("/api/admin/eventos/{$evento->id}/inscritos/{$inscripcion->id}/asistencia", ['asistio' => true]);
+
+        $response->assertNotFound();
     }
 
     public function test_admin_puede_eliminar_evento_sin_inscripciones_confirmadas(): void

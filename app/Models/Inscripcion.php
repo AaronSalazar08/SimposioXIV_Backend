@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-#[Fillable(['user_id', 'evento_id', 'estado', 'enrolled_at'])]
+#[Fillable(['user_id', 'evento_id', 'estado', 'enrolled_at', 'asistio'])]
 class Inscripcion extends Model
 {
     /** @use HasFactory<InscripcionFactory> */
@@ -28,6 +28,7 @@ class Inscripcion extends Model
         return [
             'estado' => EstadoInscripcion::class,
             'enrolled_at' => 'datetime',
+            'asistio' => 'boolean',
         ];
     }
 
