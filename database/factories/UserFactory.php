@@ -46,4 +46,12 @@ class UserFactory extends Factory
             'carnet' => null,
         ]);
     }
+
+    public function staff(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'tipo_usuario' => TipoUsuario::Staff->value,
+            'carnet' => null,
+        ]);
+    }
 }

@@ -37,6 +37,11 @@ class User extends Authenticatable
         return $this->tipo_usuario === TipoUsuario::Admin;
     }
 
+    public function esStaff(): bool
+    {
+        return $this->tipo_usuario === TipoUsuario::Staff;
+    }
+
     public function inscripciones(): HasMany
     {
         return $this->hasMany(Inscripcion::class);
